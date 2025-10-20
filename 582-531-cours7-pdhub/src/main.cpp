@@ -1,53 +1,41 @@
 #include <Arduino.h>
-#include <FastLED.h> //importer biblio doit garder
-CRGB monPixel; //Doit l'appeler pour donner la couleur
-#define BROCHE_ATOM_BOUTON_ROUGE 32 //32 super important
-#define ATOM_LIGHT 26 //Pour appeler la couleur du bouton
-
-#define BROCHE_ATOM_BOUTON 39
-
+#include <FastLED.h>
+#include <MicroOscSlip.h>
+MicroOscSlip<128> monOsc(&Serial);
+ 
+// gestion du hub
 #include <M5_PbHub.h>
 M5_PbHub myPbHub;
-
-#define KEY_CHANNEL 0 //num ou branché
-
-//CRGB keyPixel; Pu besoin
-
+ 
+#define BROCHE_ATOM_BTN_ROUGE 32
+#define BROCHE_ATOM_FIL_JAUNE 26
+#define BROCHE_ATOM_BOUTON 39
+#define BROCHE_ATOM_PIXEL 27
+ 
+// channel du hub où il est utilisé
+#define KEY_CHANNEL 0
+ 
+//CRGB keyPixel;
+CRGB atomPixel;
+ 
+ 
 void setup() {
-  FastLED.addLeds<WS2812, 27, GRB>(&monPixel, 1); //Garder la couleur pixel
-  //FastLED.addLeds<WS2812, 26, GRB>(&keyPixel, 1);
-
-  //pinMode( BROCHE_ATOM_BOUTON_ROUGE , INPUT ); //S'assurer que la broche reliée au bouton est en mode entrée
-  pinMode( BROCHE_ATOM_BOUTON , INPUT );
-
+ 
+  // NE JAMAIS OUBLIER !!!
+  Serial.begin(115200);
+ 
+  pinMode( BROCHE_ATOM_BTN_ROUGE , INPUT_PULLUP );
+ 
   Wire.begin();
   myPbHub.begin();
-
-  myPbHub.setPixelCount( KEY_CHANNEL ,  1 ); //1 pixel
+ 
 }
-
+ 
 void loop() {
-  //int maLectureAtomBoutonRouge = digitalRead( BROCHE_ATOM_BOUTON_ROUGE  ); //Chercher la lecture du bouton
-
-  int maLectureKey = myPbHub.digitalRead( KEY_CHANNEL );
-
-  int maLectureAtomBouton = digitalRead( BROCHE_ATOM_BOUTON  );
-
-  if ( maLectureAtomBouton == 0) { //La lecture de mon bouton
-    monPixel = CRGB(255,255,0); //Bouton couleur jaune au clic
-  } else {
-    monPixel = CRGB(0,0,0); //Si non bouton pas couleur
-  }
-
-  if ( maLectureKey == 0) { //La lecture de mon bouton rouge
-    myPbHub.setPixelColor( KEY_CHANNEL , 0 , 255, 255,0 ); //Bouton couleur jaune au clic
-  } else {
-    myPbHub.setPixelColor( KEY_CHANNEL , 0 , 0, 0, 0 ); //Si non bouton pas couleur
-  }
-
-  FastLED.show(); //Le montre suite à l'envoie du code avec fleche
-
-  delay(20); //Delais pour que sa marche sur l'ordi
+ 
+  // oscslip key unit
+  int press = myPbHub.digitalRead(KEY_CHANNEL);
+  monOsc.sendInt("/decollage", press);
+  delay(100);
+ 
 }
-
-
