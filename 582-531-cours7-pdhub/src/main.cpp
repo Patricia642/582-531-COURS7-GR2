@@ -37,5 +37,4 @@ void loop() {
   int press = myPbHub.digitalRead(KEY_CHANNEL);
   monOsc.sendInt("/decollage", press);
   delay(100);
- 
 }
